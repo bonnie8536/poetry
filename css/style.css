@@ -1,0 +1,375 @@
+/* ============================================================
+   那個陶瓷工作室 — 樣式
+   主題色全部用 CSS 變數，JS 只要改變數，整站就會一起換色
+   ============================================================ */
+:root {
+  --theme: #67C85C;      /* 導覽列、跑馬燈、虛線 */
+  --accent: #F6B732;     /* 目前頁面的膠囊、按鈕 */
+  --pot: #B86F4F;        /* 陶罐釉色（釉色名稱前的小圓點） */
+  --ink: #111;
+  --paper: #fff;
+  --muted: #6b6b6b;
+  --bar-h: 40px;
+  --dash: 3px;
+  --pot-size: min(31vw, 56vh);
+  --title-l: min(13.2vw, 24vh);
+  --title-r: min(10.6vw, 19.5vh);
+  --theme-fade: 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; height: 100%; }
+
+body {
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr); /* 不然跑馬燈的長字串會把整頁撐寬 */
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ---------- 導覽列 ---------- */
+.site-header {
+  position: relative;
+  z-index: 5;
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--theme);
+  transition: background-color var(--theme-fade);
+}
+
+/* 色條外的虛線（上下兩條都用同一招：底色＋遮罩切成虛線，換色時才能漸變） */
+.site-header::after,
+.marquee::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--dash);
+  background-color: var(--theme);
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 26px, transparent 26px 34px);
+  mask: repeating-linear-gradient(90deg, #000 0 26px, transparent 26px 34px);
+  transition: background-color var(--theme-fade);
+}
+.site-header::after { bottom: calc(-1 * (var(--dash) + 3px)); }
+.marquee::before { top: calc(-1 * (var(--dash) + 3px)); }
+
+.main-nav ul {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-nav a {
+  display: block;
+  padding: 0 20px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 15px;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: background-color var(--theme-fade), transform 0.15s;
+}
+.main-nav a:hover { background-color: rgb(255 255 255 / 0.2); }
+.main-nav a:active { transform: scale(0.96); }
+.main-nav a.is-active { background-color: var(--accent); }
+.main-nav a:focus-visible,
+.sound-toggle:focus-visible,
+.rebuild-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.sound-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.85;
+}
+.sound-toggle:hover { opacity: 1; background-color: rgb(255 255 255 / 0.2); }
+.sound-toggle .cross { display: none; }
+.sound-toggle.is-muted .wave { display: none; }
+.sound-toggle.is-muted .cross { display: inline; }
+
+/* ---------- 主視覺 ---------- */
+.hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 380px;
+  padding: 24px 16px;
+  overflow: hidden;
+}
+
+.hero-title {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr var(--pot-size) 1fr;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  font-weight: 900;
+  line-height: 1;
+  user-select: none;
+}
+
+/* 白字粗黑邊：paint-order 讓黑邊畫在字的外面，不會吃掉白色 */
+.outline-text {
+  color: #fff;
+  -webkit-text-stroke: 0.075em var(--ink);
+  paint-order: stroke fill;
+}
+
+.title-left {
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  margin-right: calc(var(--pot-size) * -0.035);
+  font-size: var(--title-l);
+  line-height: 1.04;
+}
+
+.title-right {
+  justify-self: start;
+  display: flex;
+  flex-direction: column;
+  margin-left: calc(var(--pot-size) * -0.035);
+  margin-top: calc(var(--title-r) * 0.12);
+  font-size: var(--title-r);
+}
+.title-right small {
+  align-self: center;
+  margin-top: 0.55rem;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.pot-slot {
+  width: var(--pot-size);
+  height: var(--pot-size);
+}
+
+/* 3D 畫布蓋在整個主視覺上（陶罐會壓在字上面，碎片也能飛滿畫面） */
+#pot-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  outline: none;
+  cursor: grab;
+}
+#pot-canvas.is-over-pot { cursor: pointer; }
+#pot-canvas.is-dragging { cursor: grabbing; }
+.hero:has(#pot-canvas:focus-visible) .pot-slot {
+  outline: 2px dashed var(--theme);
+  outline-offset: 10px;
+  border-radius: 50%;
+}
+
+/* 載入中：陶罐位置先放一句話 */
+.hero:not(.is-ready):not(.no-3d) .pot-slot {
+  display: grid;
+  place-items: center;
+}
+.hero:not(.is-ready):not(.no-3d) .pot-slot::after {
+  content: "拉坯中…";
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+  animation: breathe 1.4s ease-in-out infinite;
+}
+@keyframes breathe { 50% { opacity: 0.35; } }
+
+.pot-fallback {
+  position: absolute;
+  inset: auto 16px 50%;
+  z-index: 3;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ---------- 釉色名稱、提示、再捏一個 ---------- */
+.pot-ui {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  translate: -50% 0;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+.hero.is-ready .pot-ui { opacity: 1; }
+
+.glaze-label {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 3px 14px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.78);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+.glaze-label strong { color: var(--ink); font-weight: 700; }
+.glaze-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--pot);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+  transition: background-color var(--theme-fade);
+}
+.hint::before { content: "·"; margin-right: 8px; }
+.hint { transition: opacity 0.5s; }
+.hero.has-played .hint { opacity: 0; }
+.broken-note { display: none; }
+.hero.is-broken .glaze-dot,
+.hero.is-broken #glaze-name,
+.hero.is-broken #glaze-en,
+.hero.is-broken .hint { display: none; }
+.hero.is-broken .broken-note { display: inline; color: var(--ink); }
+
+.rebuild-btn {
+  pointer-events: auto;
+  padding: 6px 22px;
+  border: 0;
+  border-radius: 999px;
+  background-color: var(--accent);
+  color: #fff;
+  font: 500 15px/24px "Noto Sans TC", system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  animation: pop-in 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+  transition: background-color var(--theme-fade), filter 0.15s, transform 0.15s;
+}
+.rebuild-btn:hover { filter: brightness(1.06); }
+.rebuild-btn:active { transform: scale(0.96); }
+.rebuild-btn:focus-visible { outline-color: var(--ink); }
+@keyframes pop-in { from { opacity: 0; transform: translateY(6px) scale(0.9); } }
+
+/* 碎掉時整個畫面震一下 */
+.hero.is-shaking { animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+@keyframes shake {
+  15% { transform: translate(-6px, 3px); }
+  30% { transform: translate(5px, -4px); }
+  45% { transform: translate(-4px, 2px); }
+  60% { transform: translate(3px, -1px); }
+  80% { transform: translate(-1px, 1px); }
+}
+
+/* ---------- 跑馬燈 ---------- */
+.marquee {
+  position: relative;
+  height: var(--bar-h);
+  background-color: var(--theme);
+  color: #fff;
+  transition: background-color var(--theme-fade);
+}
+.marquee-viewport {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 45s linear infinite;
+}
+.marquee-track p {
+  margin: 0;
+  padding-right: 4em;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* ---------- 手機：標題改成上下排 ---------- */
+/* 只有直立的窄螢幕才改上下排；手機橫放維持原稿的左右排 */
+@media (max-width: 720px) and (orientation: portrait) {
+  :root {
+    --pot-size: min(84vw, 46svh);
+    --title-l: min(20vw, 11.5svh);
+    --title-r: min(19vw, 10.5svh);
+  }
+  .hero { padding-bottom: 72px; }
+  .hero-title {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .title-left {
+    justify-self: center;
+    flex-direction: row;
+    margin: 0;
+  }
+  .title-right {
+    justify-self: center;
+    margin: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .main-nav ul { gap: 0; }
+  .main-nav a { padding: 0 8px; font-size: 12px; }
+  .sound-toggle { right: 4px; }
+}
+
+/* 很矮的視窗（手機橫放）：主視覺不設最小高度，跑馬燈才不會被擠出畫面 */
+@media (max-height: 480px) {
+  .hero { min-height: 0; padding-block: 8px; }
+  .pot-ui { bottom: 6px; }
+  .hint { display: none; }
+}
+
+@media (max-width: 380px) {
+  .main-nav a { padding: 0 6px; font-size: 11px; }
+}
+
+/* 不想看動畫的人：跑馬燈停下來，改成可以手動左右捲 */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+  .marquee-viewport { overflow-x: auto; }
+  .hero.is-shaking { animation: none; }
+}

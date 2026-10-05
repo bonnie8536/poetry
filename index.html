@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#67C85C">
+  <title>那個陶瓷工作室 That Studio.</title>
+  <meta name="description" content="那個陶瓷工作室，成立於 1991 年。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- three.js 從 CDN 載入：直接雙擊 index.html 就能開（需要網路） -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="main-nav" aria-label="主選單">
+      <ul>
+        <li><a href="#" class="is-active" aria-current="page">HOME</a></li>
+        <li><a href="#about">ABOUT US</a></li>
+        <li><a href="#product">PRODUCT</a></li>
+        <li><a href="#contact">CONTACT US</a></li>
+      </ul>
+    </nav>
+    <button class="sound-toggle" type="button" aria-pressed="true" aria-label="關閉音效">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>
+        <path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path class="cross" d="M16.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <main class="hero">
+    <h1 class="hero-title" aria-label="那個陶瓷工作室 That Studio.">
+      <span class="title-left outline-text" aria-hidden="true"><span>那個</span><span>陶瓷</span></span>
+      <span class="pot-slot" aria-hidden="true"></span>
+      <span class="title-right" aria-hidden="true">
+        <span class="outline-text">工作室</span>
+        <small>That Studio.</small>
+      </span>
+    </h1>
+
+    <canvas id="pot-canvas" tabindex="0" role="button"
+            aria-label="3D 陶罐：拖曳可以旋轉，點一下換釉色"></canvas>
+
+    <div class="pot-ui">
+      <p class="glaze-label" aria-live="polite">
+        <span class="glaze-dot" aria-hidden="true"></span>
+        <strong id="glaze-name">素燒陶</strong> <span id="glaze-en">Terracotta</span>
+        <span class="hint">拖曳旋轉・點一下換釉色</span>
+        <span class="broken-note">碎掉了……</span>
+      </p>
+      <button class="rebuild-btn" type="button" hidden>再捏一個</button>
+    </div>
+    <p class="pot-fallback" hidden></p>
+  </main>
+
+  <footer class="marquee" aria-label="工作室簡介">
+    <div class="marquee-viewport">
+      <!-- 跑馬燈文字只要改這一段，js/ui.js 會自動複製到夠長 -->
+      <div class="marquee-track">
+        <p>那個陶瓷工作室成立於 1991 年，以「誠敬恆新」為校訓。建校以來，以務實致用為指導理念，逐步運用產學合作、創新教學之優勢，建構起「產學一體、創新設計」之特色。</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/themes.js" defer></script>
+  <script src="js/sound.js" defer></script>
+  <script src="js/ui.js" defer></script>
+  <script src="js/pot-geometry.js" defer></script>
+  <script src="js/shards.js" defer></script>
+  <script src="js/app.js" defer></script>
+  <script type="module">
+    try {
+      const THREE = await import('three');
+      const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
+      window.Pottery.start(THREE, { RoomEnvironment });
+    } catch (err) {
+      console.error(err);
+      window.Pottery.ui.showFallback('3D 陶罐載入失敗（three.js 需要網路連線）。');
+    }
+  </script>
+</body>
+</html>
